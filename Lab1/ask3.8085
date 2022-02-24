@@ -1,0 +1,43 @@
+MVI B,01H	;500=1F4H 
+MVI C,F4H  
+START:
+LDA 2000H     ; Store Á
+CPI 63H       ; If A>99 (63H)
+JNC LABEL     ; Then turn all the switches
+MVI D,FFH     
+DECA:
+INR D         
+SUI 0AH       ; Subtract by 10
+JNC DECA      ; If D<10 continue
+ADI 0AH       ; If D>10 repair value
+MOV E,A       
+MOV A,D       
+RLC           ; Rotate 4 times so the MSB are stored in E
+RLC              
+RLC
+RLC
+ADD E         
+CMA           
+STA 3000H     ; Show number
+JMP START     
+
+LABEL:        ; If A>99
+CPI C7H	; If A<199
+JNC LABEL2
+MVI A,F0H     ; A=11110000
+STA 3000H     ; Show 4 LSB
+CALL DELB     ; delay
+MVI A,FFH          
+STA 3000H     ; Turn them off
+CALL DELB  	; delay
+JMP START     ; Repeat process
+
+LABEL2:
+MVI A,0FH     ; A=00001111
+STA 3000H     ; Show 4 MSB
+CALL DELB     ; delay
+MVI A,FFH          
+STA 3000H     ; Turn them off
+CALL DELB  	; delay
+JMP START	; Repeat process
+END
