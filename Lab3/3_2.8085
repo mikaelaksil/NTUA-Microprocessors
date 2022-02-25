@@ -1,0 +1,73 @@
+	IN 10H
+	MVI D,0FH		;K1
+	MVI E,EFH		;K2
+	MVI L,FFH		;βοηθητικος κατ
+	LXI B,0B00H		;για την STDM
+
+	MVI A,10H	       ;katharismos ths othonis
+	STA 0B00H		;
+	STA 0B01H		;
+	STA 0B02H		;
+	STA 0B03H		;
+	STA 0B04H		;
+	STA 0B05H		;
+	
+	MVI A,0DH		;energopoihsh RST 6.5
+	SIM			;	
+	EI			;	
+	
+START:
+	STA 3000H		;eksodos sta leds
+	MOV A,L              
+	CALL SCREEN	       ;eksodos sthn othoni
+	
+	CMP D		       ;sygkrish me K1
+	JC RANGE1		;A<K1 ?
+	JZ RANGE1		;A=K1 ?
+	CMP E 		       ;sygkrish me K2
+	JC RANGE2		;A<K2 ?
+	JZ RANGE2		;A=K2 ?
+	MVI A,FBH		;[0...K1] => 1o LED
+	JMP START
+RANGE1:
+	MVI A,FEH		;(K1...K2] => 2o LED
+	JMP START
+RANGE2:
+	MVI A,FDH		;(K2...FFH] => 3o LED
+	JMP START
+	
+SCREEN:		;ananewsh othonis
+	PUSH PSW
+	PUSH H
+	PUSH B
+	PUSH D
+	CALL STDM
+	CALL DCD
+	POP D
+	POP B
+	POP H
+	POP PSW
+	RET
+	
+INTR_ROUTINE:
+	PUSH PSW
+	
+	CALL KIND	       ;eisodos apo plhktrologio
+	STA 0B00H		;LSB
+	MOV L,A		;proswrini apothikeusi mexri na lavw MSB
+	
+	CALL KIND
+	STA 0B01H		;MSB
+	
+	RLC			;4 fores olisthisi gia na topotheththei sto MSB
+	RLC				;
+	RLC				;
+	RLC				;
+	ORA L		;enwsh LSB,MSB
+	MOV L,A
+	
+	POP PSW
+	EI
+	RET
+	
+	END
