@@ -1,0 +1,35 @@
+START:
+LDA 2000H
+CPI 00H
+JZ ZERO ;if input is zero then print zero
+MVI B,00H
+
+ROTATE:
+RAL
+INR B ;final value of B will be the position of the leftmost 1
+JNC ROTATE
+
+MVI C,00H
+MVI D,80H ;D is 2^7 and will be divided by 2 in each loop
+
+ADDPOWERS:
+MOV A,B
+CPI 00H
+JZ FINISH
+MOV A,C
+SUB D ;add a power of 2
+MOV C,A
+DCR B ;will add powers of 2 B times
+MOV A,D
+RRC ;divide D by 2 to get next power of 2
+MOV D,A
+JMP ADDPOWERS
+
+FINISH:
+MOV A,C
+
+ZERO:
+CMA
+STA 3000H
+JMP START
+END

@@ -1,0 +1,68 @@
+
+;remove memory protection
+	IN 10H
+	MVI E,00H	;E<--0
+	LXI H,0900H 	;HL<--0900H
+
+;Store 0-255			
+START:
+	MOV M,E 	;store number in memory of HL pair
+	INR E 		;increase by 1
+	INX H		;go to next memory location
+	MOV A,E       ;move to accumulator
+	CPI FFH		
+	JNZ START 	;continue till B=255
+
+		
+	MVI B,00H	;reset B
+	MVI C,00H	;reset C
+	MVI E,FFH	
+	LXI H,0900H	;reset memory register pair HL
+
+LOOPNUMBERS:
+	INR E		;increase by 1
+	MOV D,M 	;load number from memory in D
+	MOV A,E		
+	STA 0A01H	;store E in memory 0A01H
+	MVI E,00H	;reset E for passing it in function
+	CALL ONES	;call ONES
+	LDA 0A01H	
+	MOV E,A       ;restore E drom memory 0A01H
+	INX H		;increase by 1
+	MOV A,E		
+	CPI FFH
+	JNZ LOOPNUMBERS ;loop 0 to 255
+	JMP NEXT
+
+			;here resister D has the number to be processed
+ONES:
+	INR E 		;E is loop counter from 1 to 8
+	MOV A,D	;now A has the number to be processed
+	ANI 01H 	;mask the LSB
+	JZ SKIPADD	;if LSB=0 dont increase
+	INX B		;increase BC by 1
+SKIPADD:
+	MOV A,D
+	RRC
+	MOV D,A		;now D has the numbers shifted right by one bit
+	MOV A,E
+	CPI 08H		;loop  8 times
+	JNZ ONES
+	MVI E,00H	;reset E for return to "main"		
+	RET
+
+	
+NEXT:
+	LXI H,0900H	;reset memory register pair HL
+	MVI D,00H	;reset D
+LOOP1:
+	MOV A,M
+	INX H
+	CPI 10H		;if A < 10H --> CY = 1
+	JC LOOP1	;if number<10H ---> LOOP1
+	INR D
+	CPI 60H		;if A = 60H --> NZ = 0
+	JNZ LOOP1	;if number<61H or <=60 ---> LOOP1
+
+	END
+			

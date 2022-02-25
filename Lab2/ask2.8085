@@ -1,0 +1,58 @@
+MVI A,FFH
+STA 3000H
+MVI D,C8H  ;Χρoνόμετρο 20 secs=200*0,1 secs (200=C8H)
+LXI B,0064H  ;Καθυστέρηση 100 ms
+START:
+LDA 2000H   ;Διάβασμα των διακοπτών
+ANI 80H  ;MSB
+CPI 00H  ;OFF ?
+JZ OFF1
+JMP START
+OFF1:  ;1ο OFF
+LDA 2000H
+ANI 80H
+CPI 80H  ;ON ?
+JZ ON1
+JMP OFF1
+ON1:   ;1ο ON
+LDA 2000H
+ANI 80H
+CPI 00H  ;OFF ?
+JZ OFF2
+JMP ON1
+OFF2:  ;2ο OFF
+LDA 2000H
+ANI 80H
+CPI 80H  ;ON ?
+JZ ON2
+MVI A,00H  ;’ναμμα
+STA 3000H  ;
+CALL DELB
+DCR D  ;Χρόνος
+MOV A,D
+CPI 00H  ;Εκπνοή χρόνου ?
+JNZ OFF2  ;Έλεγχος εκπνοής χρόνου
+MVI A,FFH  ;Σβήσιμο
+STA 3000H  ;
+MVI D,C8H  ;Επαν-αρχικοποίηση του χρονομέτρου
+JMP OFF1
+ON2:  ;2ο ON
+LDA 2000H
+ANI 80H
+CPI 00H  ;OFF ?
+JZ RESTART  ;Έλεγχος ανανέωσης χρόνου
+MVI A,00H
+STA 3000H
+CALL DELB
+DCR D
+MOV A,D
+CPI 00H
+JNZ ON2
+MVI A,FFH
+STA 3000H
+MVI D,C8H
+JMP OFF1
+RESTART:
+MVI D,C8H  ;Επαν-αρχικοποίηση του χρονομέτρου
+JMP OFF2
+END

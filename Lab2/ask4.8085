@@ -1,0 +1,39 @@
+START:
+LDA 2000H
+MOV B,A ;B contains input
+RRC
+MOV C,A ;C contains input rotated right once
+
+ANA B ;A contains (B and C)
+RRC
+MOV D,A
+ANI 02H ;A1 and B1
+MOV E,A ;E contains A1 and B1 in correct position
+MOV A,D
+RRC
+RRC
+ANI 08H ;A3 and B3
+MOV D,A ;D contains A3 and B3 in correct position
+
+MOV A,C
+XRA B ;A contains not(B or C)
+MOV C,A
+ANI 01H ;A0 or B0
+MOV B,A ;B contains A0 or B0 in correct position
+MOV A,C
+RRC
+RRC
+ANI 04H ;A contains A2 or B2 in correct position
+MOV C,A ;C contains A2 or B2 in correct position
+ADD E
+ADD B
+MOV B,A
+MOV A,C
+RLC
+XRA D
+ADD B
+
+CMA
+STA 3000H
+JMP START
+END
